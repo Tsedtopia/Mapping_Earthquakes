@@ -34,7 +34,9 @@ let allEarthquakes = new L.LayerGroup();
 
 // 2. Add a reference to the tectonic plates group to the overlays object.
 let overlays = {
-  "Earthquakes": allEarthquakes
+  "Tectonic Plates": allEarthquakes,
+  "Earthquakes": allEarthquakes,
+  "Major Earthquakes": allEarthquakes
 };
 
 // Then we add a control to the map that will allow the user to change which
@@ -86,9 +88,30 @@ d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geoj
       return 1;
     }
     return magnitude * 4;
+    
   }
 
-  // Creating a GeoJSON layer with the retrieved data.
+// Query to retrieve the faultline data
+var tectonicplates = "https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_plates.json";
+  
+// Create the faultlines and add them to the faultline layer
+d3.json(tectonicplates, function(data) {
+  L.geoJSON(data, {
+    style: function() {
+      return {color: "orange", fillOpacity: 0}
+    }
+  }).addTo(tectonicplates)
+})
+
+// color function to be used when creating the legend
+function getColor(d) {
+  return d > 5 ? '#ff3333' :
+         d > 4  ? '#ff6633' :
+         d > 3  ? '#ff9933' :
+         d > 2  ? '#ffcc33' :
+         d > 1  ? '#ffff33' :
+                  '#ccff33';
+}  // Creating a GeoJSON layer with the retrieved data.
   L.geoJson(data, {
     	// We turn each feature into a circleMarker on the map.
     	pointToLayer: function(feature, latlng) {
@@ -102,7 +125,7 @@ d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geoj
      onEachFeature: function(feature, layer) {
       layer.bindPopup("Magnitude: " + feature.properties.mag + "<br>Location: " + feature.properties.place);
     }
-  }).addTo(allEarthquakes);
+  }).addTo(map);
 
   // Then we add the earthquake layer to our map.
   allEarthquakes.addTo(map);
